@@ -17,6 +17,7 @@ docker build -t lunchbot .
 ```
 docker tag lunchbot jazza132/lunchbot:latest
 ```
+如果沒有登入會無法推送到遠端 <br>
 ```
 sudo docker login -u j5224821120@yahoo.com.tw
 docker push jazza132/lunchbot:latest
