@@ -1,4 +1,4 @@
-package com.launchBot.launchBot;
+package com.launchBot;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

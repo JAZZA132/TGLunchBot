@@ -1,13 +1,12 @@
-package com.launchBot.launchBot;
+package com.launchBot;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
-import com.launchBot.launchBot.controller.LunchBot;
+import com.launchBot.controller.LunchBot;
 
 @SpringBootApplication
 public class LaunchBotApplication {
-    public static final String version = "2.1";
+    public static final String version = "2.2";
 
     public static void main(String[] args) {
         String botToken = "YourKey";

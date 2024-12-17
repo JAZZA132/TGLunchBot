@@ -1,4 +1,4 @@
-package com.launchBot.launchBot.controller;
+package com.launchBot.controller;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -22,7 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import com.launchBot.launchBot.LaunchBotApplication;
+import com.launchBot.LaunchBotApplication;
 
 @SuppressWarnings("TextBlockMigration")
 public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
@@ -95,7 +95,7 @@ public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
     private void sendStartMessage(long chat_id) {
         SendMessage message = SendMessage.builder()
                 .chatId(chat_id)
-                .text("歡迎使用午餐輪值Bot " + LaunchBotApplication.version + "\n"  + "\n"  +"!\n" +
+                .text("歡迎使用午餐輪值Bot " + LaunchBotApplication.version +"!\n" +
                         "每週二三四中午12:30會自動推送\n" +
                         "可用指令:\n" +
                         "/today - 顯示今天輪值組\n" +
@@ -103,19 +103,7 @@ public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
                         "/reset - 重新從第一組開始\n" +
                         "/list - 查看所有組別\n" +
                         "/revert - 回復上一個")
-                .replyMarkup(InlineKeyboardMarkup
-                        .builder()
-                        .keyboardRow(
-                                new InlineKeyboardRow(
-                                        InlineKeyboardButton.builder()
-                                                .text("更新訊息")
-                                                .callbackData("update_msg_text")
-                                                .build()
-                                )
-                        )
-                        .build())
                 .build();
-
         try {
             telegramClient.execute(message);
         } catch (TelegramApiException e) {
