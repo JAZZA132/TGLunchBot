@@ -1,10 +1,10 @@
 參考資料
 https://rubenlagus.github.io/TelegramBotsDocumentation/getting-started.html#send-messages
 
-啟動需要機器人KEY
-可以自己創一個機器人取KEY
-或是找作者取KEY
-同一時間一組KEY只能一個機器人使用
+啟動需要機器人KEY <br>
+可以自己創一個機器人取KEY <br>
+或是找作者取KEY <br>
+同一時間一組KEY只能一個機器人使用 <br>
 
 打包成jar
 ```
