@@ -12,6 +12,8 @@ docker build -t lunchbot .
 镜像打上 Docker Hub 標籤
 docker tag lunchbot jazza132/lunchbot:latest
 
+/n
+
 sudo docker login -u j5224821120@yahoo.com.tw
 docker push jazza132/lunchbot:latest
 
