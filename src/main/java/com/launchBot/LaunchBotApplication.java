@@ -6,10 +6,11 @@ import com.launchBot.controller.LunchBot;
 
 @SpringBootApplication
 public class LaunchBotApplication {
-    public static final String version = "2.2";
+    public static final String version = "3.0";
+    public static String botToken = "YourKey";
 
     public static void main(String[] args) {
-        String botToken = "YourKey";
+
         try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(botToken, new LunchBot(botToken));
             System.out.println("LCSLunchBot " + version + " successfully started!");
