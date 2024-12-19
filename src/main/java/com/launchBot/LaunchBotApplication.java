@@ -6,7 +6,7 @@ import com.launchBot.controller.LunchBot;
 
 @SpringBootApplication
 public class LaunchBotApplication {
-    public static final String version = "3.0";
+    public static final String version = "3.1";
     public static String botToken = "YourKey";
 
     public static void main(String[] args) {

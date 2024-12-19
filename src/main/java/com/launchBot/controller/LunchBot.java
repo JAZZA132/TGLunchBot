@@ -91,9 +91,11 @@ public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
 
     private void initializeScheduledNotifications() {
         scheduler.scheduleAtFixedRate(() -> {
-            LocalDate today = ZonedDateTime.now(ZoneId.of("Asia/Taipei")).toLocalDate();
-            //todo 移除
-            System.out.println(today+"today__");
+
+            ZonedDateTime executionTime = ZonedDateTime.now(ZoneId.of("Asia/Taipei"));
+            System.out.println("Task executed at: " + executionTime);
+
+            LocalDate today = executionTime.toLocalDate();
 
             // 只在周二、三、四推送
             if (isNotificationDay(today)) {
@@ -107,7 +109,7 @@ public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
 
                 System.out.println("Automatic rotation: " + nextGroupMessage);
             }
-        }, getInitialDelay(), 24, TimeUnit.HOURS);
+        }, getInitialDelay(), TimeUnit.DAYS.toMillis(1), TimeUnit.MILLISECONDS);
     }
 
     // 计算初始延迟
@@ -119,11 +121,11 @@ public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
             nextRun = nextRun.plusDays(1);
         }
         //todo 移除
-        System.out.println(nextRun+"nextRun __");
+        System.out.println("排程已啟動");
+        System.out.println("下次執行時間: " + nextRun);
+        System.out.println("初始延遲毫秒數: " + Duration.between(now, nextRun).toMillis());
 
-        return TimeUnit.MILLISECONDS.toSeconds(
-                Duration.between(now, nextRun).toMillis()
-        );
+        return Duration.between(now, nextRun).toMillis(); // 回傳毫秒
     }
 
     // 判断是否为推送日（周二、三、四）
