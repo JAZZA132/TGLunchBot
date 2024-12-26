@@ -24,8 +24,8 @@ public class LunchRotationManager {
         rotationGroups.add(List.of("Eileen", "Gary"));
         rotationGroups.add(List.of("Beni", "Gina"));
         rotationGroups.add(List.of("Jerome", "Aaron Wang"));
-        rotationGroups.add(List.of("Cathy", "Tommy（Aaron Lu）"));
-        rotationGroups.add(List.of("Kent（Aaron Wang）", "Didi（Jerome）"));
+        rotationGroups.add(List.of("Cathy", "Tommy"));
+        rotationGroups.add(List.of("Kent", "Didi（Jerome）"));
 
         currentGroupIndex = 0;
     }
