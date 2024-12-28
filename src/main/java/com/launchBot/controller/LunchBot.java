@@ -1,30 +1,35 @@
 package com.launchBot.controller;
 
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static com.launchBot.Service.LunchRotationManager.sendMessage;
 import static com.launchBot.Service.LunchRotationManager.sendStartMessage;
-import static java.lang.Math.toIntExact;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import com.launchBot.Service.LunchRotationManager;
 
 @SuppressWarnings("TextBlockMigration")
 public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
+    private boolean isSchedulerEnabled = true;
     private final TelegramClient telegramClient;
     private final LunchRotationManager rotationManager;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static final long group_chat_id = -4525033144L;
     public static final long aaron_chat_id = 1016114104L;
@@ -63,32 +68,35 @@ public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
                 case "/revert":
                     sendMessage(chat_id, rotationManager.revert());
                     break;
-            }
-        }
-        // 處理回調查詢
-        else if (update.hasCallbackQuery()) {
-            String call_data = update.getCallbackQuery().getData();
-            long message_id = update.getCallbackQuery().getMessage().getMessageId();
-            long chat_id = update.getCallbackQuery().getMessage().getChatId();
-
-            if (call_data.equals("update_msg_text")) {
-                String answer = "Updated message text";
-                EditMessageText new_message = EditMessageText.builder()
-                        .chatId(chat_id)
-                        .messageId(toIntExact(message_id))
-                        .text(answer)
-                        .build();
-                try {
-                    telegramClient.execute(new_message);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace(System.err);
-                }
+                case "/scheduler_off":
+                    if (isSchedulerEnabled) {
+                        scheduler.shutdown();
+                        isSchedulerEnabled = false;
+                        sendMessage(chat_id, "排程已關閉 ⏸️");
+                    } else {
+                        sendMessage(chat_id, "排程已經是關閉狀態");
+                    }
+                    break;
+                case "/scheduler_on":
+                    if (!isSchedulerEnabled) {
+                        scheduler.shutdownNow(); // 確保舊的排程完全關閉
+                        this.scheduler = Executors.newScheduledThreadPool(1);
+                        initializeScheduledNotifications();
+                        isSchedulerEnabled = true;
+                        sendMessage(chat_id, "排程已開啟 ▶️");
+                    } else {
+                        sendMessage(chat_id, "排程已經是開啟狀態");
+                    }
+                    break;
+                case "/scheduler_status":
+                    String status = isSchedulerEnabled ? "開啟 ▶️" : "關閉 ⏸️";
+                    sendMessage(chat_id, "目前排程狀態: " + status);
+                    break;
             }
         }
     }
 
     //排程
-
     private void initializeScheduledNotifications() {
         scheduler.scheduleAtFixedRate(() -> {
 
@@ -97,7 +105,7 @@ public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
 
             LocalDate today = executionTime.toLocalDate();
 
-            // 只在周二、三、四推送
+            // 只在周二、三、四,非國定假日推送
             if (isNotificationDay(today)) {
 
                 // 今日人員
@@ -120,33 +128,43 @@ public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
         if (now.isAfter(nextRun)) {
             nextRun = nextRun.plusDays(1);
         }
-        //todo 移除
-        System.out.println("排程已啟動");
-        System.out.println("下次執行時間: " + nextRun);
-        System.out.println("初始延遲毫秒數: " + Duration.between(now, nextRun).toMillis());
 
-        return Duration.between(now, nextRun).toMillis(); // 回傳毫秒
+
+        long delay = Duration.between(now, nextRun).toMillis();
+
+        System.out.println("延遲時間" + delay);
+
+        return Math.max(delay, 0);
     }
 
     // 判断是否为推送日（周二、三、四）
     private boolean isNotificationDay(LocalDate date) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
-        return dayOfWeek == DayOfWeek.TUESDAY ||
+        boolean isWorkday = dayOfWeek == DayOfWeek.TUESDAY ||
                 dayOfWeek == DayOfWeek.WEDNESDAY ||
                 dayOfWeek == DayOfWeek.THURSDAY;
-    }
 
-    // 添加一个关闭方法，以便在应用程序关闭时正确停止调度器
-    public void shutdown() {
-        scheduler.shutdown();
+        // 如果不是工作日，直接返回 false
+        if (!isWorkday) {
+            return false;
+        }
+
+        // 讀取假日檔案並檢查是否為假日
         try {
-            if (!scheduler.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                scheduler.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            scheduler.shutdownNow();
+            Path holidayFile = Paths.get("src/main/java/com/launchBot/config/2025Date.txt");
+            List<String> holidays = Files.readAllLines(holidayFile);
+
+            // 將當前日期格式化為與檔案相同的格式 (yyyy/M/d)
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/M/d");
+            String dateStr = date.format(formatter);
+
+            // 如果日期在假日清單中，返回 false
+            return !holidays.contains(dateStr);
+        } catch (IOException e) {
+            System.err.println("無法讀取假日檔案: " + e.getMessage());
+            // 如果讀取檔案失敗，只依據週間判斷
+            return true;
         }
     }
-
 }
 

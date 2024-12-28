@@ -88,19 +88,22 @@ public class LunchRotationManager {
     }
 
 
-
     // 發送啟動訊息，包含內嵌鍵盤
     public static void sendStartMessage(long chat_id) {
         SendMessage message = SendMessage.builder()
                 .chatId(chat_id)
-                .text("歡迎使用午餐輪值Bot " + LaunchBotApplication.version +"!\n" +
+                .text("歡迎使用午餐輪值Bot " + LaunchBotApplication.version + "!\n" +
                         "每週二三四中午12:30會自動推送\n" +
+                        "遇國定假日或公司假日會暫停(但GameDay無法事先預知)" +
                         "可用指令:\n" +
                         "/today - 顯示今天輪值組\n" +
                         "/done - 標記今天輪值結束,換下一組\n" +
                         "/reset - 重新從第一組開始\n" +
                         "/list - 查看所有組別\n" +
-                        "/revert - 回復上一個")
+                        "/revert - 回復上一個\n" +
+                        "/scheduler_status - 排程狀態\n" +
+                        "/scheduler_on - 開啟排程\n" +
+                        "/scheduler_off - 關閉排程\n")
                 .build();
         try {
             telegramClient.execute(message);
