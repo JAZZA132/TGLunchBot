@@ -1,10 +1,11 @@
 package com.launchBot.controller;
 
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -151,8 +152,16 @@ public class LunchBot implements LongPollingSingleThreadUpdateConsumer {
 
         // 讀取假日檔案並檢查是否為假日
         try {
-            Path holidayFile = Paths.get("src/main/java/com/launchBot/config/2025Date.txt");
-            List<String> holidays = Files.readAllLines(holidayFile);
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("config/2025Date.txt");
+            if (inputStream == null) {
+                throw new FileNotFoundException("File not found: config/2025Date.txt");
+            }
+
+            // 將 InputStream 轉為 List<String>
+            List<String> holidays;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                holidays = reader.lines().toList();
+            }
 
             // 將當前日期格式化為與檔案相同的格式 (yyyy/M/d)
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/M/d");
